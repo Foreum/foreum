@@ -1,439 +1,197 @@
-# Foreum 🚀
+# Foreum
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+**Open-source forum software for building and running online communities.**
 
-> A powerful, modern forum platform built with React, TanStack Router, tRPC, and Drizzle ORM, designed for both developers and community managers.
+Foreum is a modern, self-hostable discussion platform for communities, product support, and knowledge sharing. It combines rich discussions, user management, moderation tools, and community administration in one application.
 
-## 🌟 Why Foreum?
+[Website](https://foreum.vercel.app) · [Issues](https://github.com/Foreum/foreum/issues) · [Contributing](https://github.com/Foreum/foreum/blob/main/CONTRIBUTING.md)
 
-Foreum is your all-in-one solution for building engaging community spaces. Whether you're creating a product support forum, an internal discussion board, or a vibrant community platform, Foreum provides everything you need out of the box:
+> Foreum is actively evolving. Some features and setup instructions may change as development progresses.
 
-- 🔒 **Enterprise-grade Authentication** with Better Auth
-- 🚄 **Lightning-fast Performance** with React and TanStack Router
-- 🔧 **Type-safe Backend** using tRPC and Drizzle ORM
-- 📱 **Responsive Design** for all devices
-- 🌓 **Dark/Light Themes** built-in, also customizable in admin section
+## Why Foreum?
 
-## 📚 Table of Contents
+Running a community involves more than publishing discussion threads. Foreum brings the tools needed to manage conversations, members, and community settings together in one platform.
 
-- [Installation](#installation)
-- [Features](#features)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Self-Hosted Installation
-
-Foreum can be deployed on any platform that supports Node.js. Choose your preferred deployment method:
-
-### System Requirements
-
-- Node.js 18 or later
-- PostgreSQL 15 or later
-- SMTP server for email notifications (or Resend API key)
-- 1GB RAM minimum (2GB recommended)
-- 10GB storage space
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and fill in:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `BETTER_AUTH_SECRET` | Yes | Random string for auth encryption (`openssl rand -hex 32`) |
-| `RESEND_API_KEY` | For email | Resend API key for sending emails |
-| `BETTER_AUTH_EMAIL` | For email | From address for outgoing emails |
-| `GOOGLE_CLIENT_ID` | For Google auth | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | For Google auth | Google OAuth client secret |
-| `DISCORD_CLIENT_ID` | For Discord auth | Discord OAuth client ID |
-| `DISCORD_CLIENT_SECRET` | For Discord auth | Discord OAuth client secret |
-| `BASE_URL` | Yes | Public URL of your forum (e.g. `https://forum.example.com`) |
-| `TRUSTED_ORIGINS` | For multi-domain | Comma-separated allowed CORS origins (default: `http://localhost:3000`) |
-
-### 🐳 Docker Compose (Recommended)
-
-```bash
-# Clone and enter the directory
-git clone https://github.com/abdulkareemoj/foreum.git
-cd foreum
-
-# Configure your domain in docker-compose.yml and Caddyfile
-# Set your domain in Caddyfile (replace forum.yourdomain.com)
-
-# Start everything
-docker compose up -d
-
-# Run database migrations (first time only)
-docker compose run --rm app pnpm db:push -- --force
-
-# The app will be available at https://foreum.yourdomain.com
-```
-
-The included `docker-compose.yml` bundles:
-- **app**, Foreum server (port 3000)
-- **db**, PostgreSQL 17
-- **caddy**, Automatic TLS via Let's Encrypt, reverse proxy
-
-### 🐳 Docker (Standalone)
-
-```bash
-# Build the image
-docker build -t foreum .
-
-# Run with external Postgres
-docker run -d -p 3000:3000 \
-  -e DATABASE_URL="postgresql://user:pass@host:5432/foreum" \
-  -e BETTER_AUTH_SECRET="your-secret" \
-  -e BASE_URL="https://forum.example.com" \
-  -e RESEND_API_KEY="re_..." \
-  -e BETTER_AUTH_EMAIL="noreply@example.com" \
-  foreum
-
-# Run migrations
-docker exec <container-id> pnpm db:push -- --force
-```
-
-### 💻 Manual Installation (VPS / Bare Metal)
-
-```bash
-# Clone the repository
-git clone https://github.com/abdulkareemoj/foreum.git
-cd foreum
-
-# Install dependencies
-pnpm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your database and auth settings
-
-# Run migrations
-pnpm db:push -- --force
-
-# Build and start
-pnpm build
-pnpm start
-```
-
-#### Process Management (PM2)
-
-```bash
-npm install -g pm2
-pm2 start npm --name "foreum" -- start
-pm2 save
-pm2 startup
-```
-
-#### Reverse Proxy (Nginx)
-
-```nginx
-server {
-    listen 80;
-    server_name forum.yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-Then set up Certbot for TLS:
-```bash
-sudo certbot --nginx -d forum.yourdomain.com
-```
-
-### ☁️ Cloud Platforms
-
-Foreum (Nitro) supports multiple deployment presets. Add to `vite.config.ts`:
-
-```ts
-nitro({
-  preset: 'vercel',    // or 'cloudflare-pages', 'netlify', 'railway'
-}),
-```
-
-**Supported presets:** `node-server` (default), `vercel`, `netlify`, `cloudflare-pages`, `railway`, `render-com`, `fly`, `aws-lambda`
-
-> **Note:** Serverless platforms require a PostgreSQL provider like Neon or Supabase. File uploads use UploadThing (works on serverless).
+- **Rich discussions**: Categories, tags, reactions, voting, bookmarks, and a rich-text editor.
+- **Community management**: User profiles, roles, permissions, reputation, and groups.
+- **Moderation**: Content reports, moderation tools, audit logs, and configurable trust levels.
+- **Administration**: Analytics, announcements, custom pages, and appearance settings.
+- **Authentication**: Email/password authentication and supported OAuth providers.
+- **Customizable experience**: Responsive layouts and configurable light and dark themes.
+- **Self-hosting**: Run your own community and control your deployment.
 
 ## Features
 
-### Core Features
+### Discussions and content
 
-- 🔐 **Advanced Authentication**
-  - Email/password with username support
-  - Email verification & password reset
-  - Google OAuth + Discord OAuth
-  - RBAC with user/moderator/admin roles
-  - Trust levels (TL0-TL4) with admin-configurable names, requirements, and permissions
+- Thread creation, editing, and management
+- Categories, nested subcategories, and tags
+- Rich-text editing with Plate.js
+- Reactions, upvotes, and downvotes
+- Bookmarks and thread subscriptions
+- Thread drafts, pinning, and locking
+- Full-text search
 
-- 📝 **Rich Discussion Tools**
-  - Plate.js rich text editor with several plugins (mentions, emojis, code blocks, tables, etc.)
-  - Thread categories and tags (with subcategory support)
-  - Reactions (like, heart, laugh)
-  - Upvotes/downvotes (Reddit-style scoring)
-  - File/image uploads via UploadThing
-  - Thread pinning and locking (admin)
-  - Bookmarks
+### Members and community
 
-- 👥 **User Management**
-  - Customizable profiles (bio, avatar, website)
-  - Role-based permissions (user, moderator, admin)
-  - Reputation points and badge system
-  - Activity tracking
+- User profiles and activity tracking
+- Role-based access for users, moderators, and administrators
+- Reputation and badges
+- Configurable trust levels
+- Groups, group forums, and events
+- Event RSVPs
+- Direct messaging
+- In-app notifications
 
-- 🗂️ **Community Features**
-  - Groups with forums, events, and membership
-  - Events with RSVP (physical/virtual/hybrid)
-  - Direct messaging between users
-  - Notifications (in-app)
-  - Custom pages (admin-managed)
+### Moderation and administration
 
-- 🛡️ **Moderation & Admin**
-  - Report system with audit logs
-  - Content moderation tools
-  - Admin dashboard with analytics (Recharts)
-  - Global settings (maintenance mode, custom CSS/JS)
-  - Announcement system
-  - Full theme editor (OKLCH colors, Google Fonts, border radius, presets)
+- Content reporting and moderation audit logs
+- Moderation tools and configurable content filtering
+- Administrative dashboard and analytics
+- Global settings and maintenance mode
+- Community announcements and custom pages
+- Theme customization, including colors, fonts, and presets
 
-### Technical Features
+## Technology stack
 
-- ⚡ **Performance-First Architecture**
-  - Server-side rendering with TanStack Start
-  - Type-safe APIs with tRPC v11
-  - Efficient database queries with Drizzle ORM
-  - Rate limiting (sliding window, tiered by role)
-  - Structured logging (Pino)
+Foreum is built with a modern, type-safe full-stack JavaScript and TypeScript ecosystem.
 
-- **Modern UI/UX**, Responsive design, customizable dark/light themes, skeleton loaders, mobile-friendly navbar with collapsible sidebars, 147 shadcn/ui components
+| Technology | Purpose |
+| --- | --- |
+| React | User interface |
+| TanStack Start | Full-stack application framework |
+| TanStack Router | Routing |
+| tRPC | Type-safe APIs |
+| Drizzle ORM | Database access |
+| PostgreSQL | Database |
+| Better Auth | Authentication |
+| Plate.js | Rich-text editing |
+| Tailwind CSS | Styling |
+| shadcn/ui | UI components |
+| pnpm | Package management |
 
-- **Modern stack**: React 19 + TanStack Router + tRPC v11 + Drizzle ORM + Better Auth v1.6 + Plate.js v53 + Tailwind CSS v4, great DX and strong type-safety across the stack.
+## Getting started
 
-## Use Cases
+Foreum is under active development. Before running it locally, make sure you have the required tools installed.
 
-Foreum can be used for:
+### Prerequisites
 
-- A public community forum (product support, hobbyist communities, fan clubs).
-- Internal company discussion board or knowledge-sharing hub.
-- A feature-rich comment + discussion layer for an existing app.
-- An MVP for social/community features when validating product-market fit.
-- A teaching template for modern full-stack React + TanStack Router + tRPC apps.
+- Node.js
+- pnpm
+- PostgreSQL
 
-## Local Development
+Use a Node.js version compatible with the project's dependencies.
 
-> The instructions below assume you have Node.js (v18+) and a Postgres database ready. Adjust package manager (npm / pnpm / yarn) as you prefer.
-
-1. **Clone the repo**
-
-   ```bash
-   git clone https://your-repo-url/foreum.git
-   cd foreum
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Environment**
-   Create a `.env` (copy `.env.example` if present) and set the important variables:
-
-   ```env
-   DATABASE_URL=postgres://user:pass@localhost:5432/foreum
-   VITE_PUBLIC_BASE_URL=http://localhost:5173
-   BETTER_AUTH_SECRET=some-super-secret
-   SMTP_HOST=smtp.example.com
-   SMTP_PORT=587
-   SMTP_USER=...
-   SMTP_PASS=...
-   ```
-
-4. **Database migrations & schema**
-   If you use Drizzle migrations or Better Auth CLI, run the migration commands needed to create tables (users, accounts, sessions, profile, settings, bookmarks, notifications, etc.). Example command placeholders:
-
-   ```bash
-   pnpm db:push -- --force
-   ```
-
-   (Adjust according to your setup, Foreum includes Drizzle schema files for auth, profile, settings, bookmark, notification, etc.)
-
-5. **Run the dev server**
-
-   ```bash
-   pnpm dev
-   ```
-
-6. **Open the app**
-   Visit `http://localhost:5173` (or whatever your Vite server prints) and explore.
-
-## Usage
-
-### Quick Start Guide
-
-1. Set up your environment variables in `.env`:
-
-   ```env
-   DATABASE_URL=postgresql://user:password@localhost:5432/foreum
-   BETTER_AUTH_SECRET=your-secret-key
-   SMTP_HOST=your-smtp-host
-   ```
-
-2. Create your first admin user:
-
-   ```bash
-   pnpm create-admin
-   ```
-
-3. Start customizing your forum:
-   - Modify themes in `src/lib/styles`
-   - Configure authentication in `src/lib/auth`
-   - Add new features through the modular router system
-
-### Development Commands
+### 1. Clone the repository
 
 ```bash
-pnpm dev         # Start development server
-pnpm build       # Build for production
-pnpm preview     # Preview production build
-pnpm test        # Run tests
-pnpm lint        # Run linters
+git clone https://github.com/Foreum/foreum.git
+cd foreum
 ```
 
-### Quick notes
+### 2. Install dependencies
 
-- Authentication flows: sign up/sign in, verify email (via link or OTP), forgot-password (OTP or reset link) are included in UI and wired into Better Auth client APIs.
-- Frontend forms use React Hook Form with `zod` schemas for validation and client-server parity.
-- TRPC routers live under `src/server/trpc/routers` and are intended to be small, single-responsibility units (threads, category, tag, user, bookmarks, notifications, settings).
+```bash
+pnpm install
+```
 
-## Contribution Guidelines
+### 3. Configure environment variables
 
-Your contributions are welcome, whether filing issues, suggesting features, contributing code, or improving docs!
+Copy the example environment file:
 
-### How to contribute
+```bash
+cp .env.example .env
+```
 
-1. Fork the repo and create a branch for your change.
-2. Write clear, focused commits and include tests where possible.
-3. Open a PR with a description of your changes and the motivation.
+On Windows, copy `.env.example` to `.env` using your preferred terminal or file manager.
 
-### Code style & PR tips
+At minimum, configure your PostgreSQL connection and authentication secret:
 
-- Keep UI and logic separated (components vs. stores/services).
-- Use the existing `zod` schemas and `trpc` procedures when adding features to maintain consistency.
-- If you add DB schema changes, include a migration and update any seed/mock data.
-- Add or update documentation for any new features.
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/foreum"
+BETTER_AUTH_SECRET="your-random-secret"
+BASE_URL="http://localhost:3000"
+```
 
-### Reporting bugs & feature requests
+See `.env.example` for the additional email and OAuth configuration options.
 
-Please open an issue, include steps to reproduce, expected vs actual behavior, and (if possible) a minimal repro.
+### 4. Prepare the database
 
-### Code of conduct
+Review the Drizzle configuration and database scripts before applying the schema:
 
-We’re committed to fostering a welcoming community. Please follow a friendly and respectful tone in all interactions.
+```bash
+pnpm db:push
+```
+
+Use this command against a development database. Avoid forcing schema changes against a database containing important data.
+
+### 5. Start the development server
+
+```bash
+pnpm dev
+```
+
+Open the local URL printed by the development server.
+
+## Available commands
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start the development server |
+| `pnpm build` | Build the application and check TypeScript |
+| `pnpm start` | Start the production server |
+| `pnpm preview` | Preview the production build |
+| `pnpm db:push` | Push the Drizzle schema to the database |
+| `pnpm db:generate` | Generate database migrations |
+| `pnpm db:migrate` | Apply database migrations |
+| `pnpm db:studio` | Open Drizzle Studio |
+| `pnpm test` | Run the test suite |
+| `pnpm test:e2e` | Run end-to-end tests |
+
+## Deployment
+
+Foreum uses TanStack Start and Nitro. The repository includes deployment configuration that should be checked against your target environment before production use.
+
+For production deployments, configure your database, authentication secret, public application URL, email delivery, OAuth credentials if needed, and file-upload provider.
+
+Deployment instructions for specific platforms should be documented separately once each deployment path has been verified.
 
 ## Contributing
 
-### Ways to Contribute
+Contributions are welcome, including bug reports, feature proposals, documentation improvements, and code contributions.
 
-- Report bugs and suggest features
-- Improve documentation
-- Submit pull requests
-- Share your success stories
-- Help others in discussions
+1. Check the existing issues before starting substantial work.
+2. Fork the repository and create a branch for your changes.
+3. Keep changes focused and follow the conventions already used in the codebase.
+4. Test your changes where possible.
+5. Open a pull request explaining what changed and why.
 
-### Development Process
+Please read the [contribution guidelines](https://github.com/Foreum/foreum/blob/main/CONTRIBUTING.md) and follow the project's [Code of Conduct](https://github.com/Foreum/foreum/blob/main/CODE_OF_CONDUCT.md).
 
-1. Fork and clone the repository
-2. Create a new branch: `git checkout -b feature/your-feature`
-3. Make your changes
-4. Run tests: `pnpm test`
-5. Push to your fork
-6. Submit a pull request
+- [Report a bug](https://github.com/Foreum/foreum/issues)
+- [Request a feature](https://github.com/Foreum/foreum/issues)
 
 ## Security
 
-- Configure environment variables properly in production
-- Use secure authentication settings
-- Follow security best practices for file uploads
-- Keep dependencies updated
+If you discover a security vulnerability, please follow the project's [security policy](https://github.com/Foreum/foreum/blob/main/SECURITY.md) rather than publicly disclosing sensitive details.
 
 ## Roadmap
 
-### Completed
+Foreum is continuing to evolve. Planned improvements include email digests, real-time updates, and an extensibility system for plugins and themes.
 
-| Feature | Status |
-|---------|--------|
-| Auth (email/password, Google, Discord, OTP) | ✅ |
-| RBAC (user/moderator/admin) | ✅ |
-| Thread CRUD with categories and tags | ✅ |
-| Categories with subcategory hierarchy | ✅ |
-| Thread drafts (auto-save) | ✅ |
-| Rich text editor (Plate.js v53, 53 plugins) | ✅ |
-| Reactions (like/heart/laugh toggle) | ✅ |
-| Upvotes/downvotes (separate from reactions) | ✅ |
-| Bookmarks | ✅ |
-| Best answer / solved threads | ✅ |
-| User profiles + reputation/badges | ✅ |
-| Groups (forums, events, membership) | ✅ |
-| Events with RSVP | ✅ |
-| Direct messaging | ✅ |
-| Notifications (in-app) | ✅ |
-| Thread subscriptions (follow for updates) | ✅ |
-| Reports + moderation audit logs | ✅ |
-| Admin dashboard + analytics | ✅ |
-| Admin theme editor (OKLCH, fonts, presets) | ✅ |
-| Global settings (maintenance, custom CSS/JS) | ✅ |
-| Announcements | ✅ |
-| Custom pages | ✅ |
-| Rate limiting (tiered by role) | ✅ |
-| Trust levels (TL0-TL4 progressive permissions) | ✅ |
-| Time-limited bans (1h, 24h, 7d, 30d, permanent) | ✅ |
-| Auto-moderation (regex/string filtering) | ✅ |
-| Full-text search (PostgreSQL tsvector) | ✅ |
-| Docker deployment (app + Postgres + Caddy) | ✅ |
-| Cloud deployment (Vercel, Netlify, Railway, etc.) | ✅ |
-
-### Planned
-
-| Priority | Feature | Notes |
-|----------|---------|-------|
-| Medium | Email digests | Periodic summary emails |
-| Low | WebSocket/SSE | Real-time notifications and messaging |
-| Low | Plugin/theme contract | Extensibility system |
+Check the [issue tracker](https://github.com/Foreum/foreum/issues) for current discussions and development priorities.
 
 ## License
 
-Foreum is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+See the repository's license file for licensing terms.
 
-## Support the Project
+## Support Foreum
 
-⭐ Star this repository if you find it helpful!
+If Foreum is useful to you:
 
-📣 Share your experience using Foreum
+- Star the repository.
+- Report bugs and suggest improvements.
+- Contribute code or documentation.
+- Share the project with other developers and community builders.
 
-🐛 Report bugs and suggest features
-
-💻 Submit pull requests
-
-Join our community and help make Foreum even better!
-
-## Final Notes
-
-Foreum is meant to be a friendly, practical starting point for building a community product. Whether you are product-minded (designers, founders) or developer-minded (engineers, contributors), Foreum tries to make adding value straightforward:
-
-- Clear folders and components make UI changes low-friction.
-- Type-safe backend (tRPC + Drizzle) keeps runtime surprises down.
-- Auth and user flows are built with common real-world needs in mind (username support, OTP, email verification).
-
-If you like what you see ⭐ star the repo, open an issue, or submit a PR. Let’s build a vibrant community together!
+**Build better communities with Foreum.**
